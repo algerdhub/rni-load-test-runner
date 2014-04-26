@@ -4,6 +4,8 @@ import main.java.runner.utils.RfileUtils;
 
 import java.io.File;
 import java.util.logging.*;
+
+import main.java.runner.utils.RuntimeRunner;
 import net.sourceforge.argparse4j.*;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.*;
@@ -13,7 +15,7 @@ public class TestRunner {
     private static Logger log = Logger.getLogger(TestRunner.class.getName());
 
     public static void main(String[] args){
-        log.info("--Start Test");
+        log.info("--Start");
 
         log.info("Read application config");
         Config config = getConfig();
@@ -60,7 +62,7 @@ public class TestRunner {
         }
 
         //
-        log.info("--Test is completed");
+        log.info("--Exit");
     }
 
     private static void run(Config config, Namespace commands){
@@ -99,6 +101,7 @@ public class TestRunner {
                 RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJECT_WORKSPACE_TEST_PLAN, testName),
                 RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJJECT_WORKSPACE_TEST_RESULT, config.JMETER_SW_RESULTS_PATH));
         log.info("Run command: " + command);
+        RuntimeRunner.execute(command, config);
     }
 
     private static Config getConfig(){
