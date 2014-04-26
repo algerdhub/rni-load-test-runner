@@ -3,6 +3,7 @@ package main.java.runner;
 import main.java.runner.utils.RfileUtils;
 import java.util.logging.*;
 import net.sourceforge.argparse4j.*;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.*;
 
 public class TestRunner {
@@ -16,19 +17,37 @@ public class TestRunner {
         //
         ArgumentParser parser = ArgumentParsers.newArgumentParser("rni")
                 .description("Process rni load testing");
-        Subparsers subparsers = parser.addSubparsers().help("sub-command help");
+        Subparsers subparsers = parser.addSubparsers().help("");
 
-        Subparser run = subparsers.addParser("run").help("run command");
+        Subparser run = subparsers.addParser("run").help("Run test plan");
+        run.addArgument("--test_plan")
+                .type(Arguments.fileType().verifyIsFile())
+                .required(true)
+                .help("Path to the test plan");
+        run.addArgument("--update_test_plan_via_config")
+                .type(Boolean.class)
+                .required(false)
+                .setDefault(false)
+                .help("If true test plan will be edited with parameters set in test plan config");
         run.addArgument("--test")
-                .type(String.class)
-                .required(true);
+                .type(Boolean.class)
+                .required(false)
+                .help("test");
 
+        Subparser status = subparsers.addParser("status").help("Check test execution status");
+        status.addArgument("--ss")
+                .type(String.class);
+
+        Namespace res = null;
         try {
-            Namespace res = parser.parseArgs(args);
+            res = parser.parseArgs(args);
         } catch (ArgumentParserException e) {
             parser.handleError(e);
             System.exit(1);
         }
+
+        String command = args[0];
+        System.out.println(res.getAttrs().get("test_plan"));
 
         //
 

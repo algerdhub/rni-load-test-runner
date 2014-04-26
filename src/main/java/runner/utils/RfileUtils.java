@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.*;
 
 public class RfileUtils {
     private static Logger log = Logger.getLogger(RfileUtils.class.getName());
@@ -21,7 +22,7 @@ public class RfileUtils {
     public static void deleteFolder(String path){
         try {
             log.info("Delete folder: " + path);
-            org.apache.commons.io.FileUtils.deleteDirectory(new File(path));
+           FileUtils.deleteDirectory(new File(path));
         } catch (IOException e) {
             log.log(Level.SEVERE, "Error when deleting folder: " + path, e);
         }
