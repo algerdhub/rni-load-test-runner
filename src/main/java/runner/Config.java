@@ -8,14 +8,17 @@ public class Config {
 
     public final String PROJECT_ROOT_PATH = propertyLoader.loadProperty("project_root_path");
     public final String PROJECT_WORKSPACE_ROOT = propertyLoader.loadProperty("work_directory");
-    public final String PROJECT_WORKSPACE_TEST_PLAN = propertyLoader.loadProperty("work_test_plan");
-    public final String PROJECT_WORKSPACE_TEST_RESOUCE = propertyLoader.loadProperty("work_test_resource");
-    public final String PROJJECT_WORKSPACE_TEST_RESULT = propertyLoader.loadProperty("work_test_result");
+    public final String PROJECT_TEST_PLAN = propertyLoader.loadProperty("work_test_plan");
+    public final String PROJECT_TEST_RESOUCE = propertyLoader.loadProperty("work_test_resource");
+    public final String PROJJECT_TEST_RESULT = propertyLoader.loadProperty("work_test_result");
 
     public final String JMETER_ROOT_PATH = propertyLoader.loadProperty("jMeter_root_path");
     public final String JMETER_PROPERTIES_PATH = propertyLoader.loadProperty("jMeter_properties");
     public final String JMETER_EXECUTABLE_PATH = propertyLoader.loadProperty("jMeter_executable");
-    public final String JMETER_SW_RESULTS_PATH = propertyLoader.loadProperty("jMeter_simple_writer_results");
+
+    public final String JMETER_TOTAL_RESULTS_PATH = propertyLoader.loadProperty("jMeter_total_results");
+    public final String JMETER_SUMMARY_RESULTS_PATH = propertyLoader.loadProperty("jMeter_summary_results");
+    public final String TRANSACTION_CONTROLLER_PREFIX = propertyLoader.loadProperty("transaction_controller_sapmler_prefix");
 
     public Config(){
     }

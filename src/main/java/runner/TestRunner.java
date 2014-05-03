@@ -2,7 +2,7 @@ package main.java.runner;
 
 import main.java.runner.utils.RfileUtils;
 
-import java.io.File;
+import java.awt.*;
 import java.util.logging.*;
 
 import main.java.runner.utils.RuntimeRunner;
@@ -37,7 +37,11 @@ public class TestRunner {
 
         Subparser status = subparsers.addParser("status").help("Check test execution status");
 
-        Subparser result = subparsers.addParser("result").help("Process result .csv files");
+        Subparser result = subparsers.addParser("prepare_results").help("Process result .csv files");
+        result.addArgument("--clear_trans_samplers")
+                .type(Boolean.class)
+                .setDefault(true)
+                .help("Remove transaction controllers from results");
 
 
         Namespace res = null;
@@ -57,8 +61,8 @@ public class TestRunner {
         } else if(command.equals("status"))
         {
             //TODO: status method
-        } else if(command.equals("result")){
-            //TODO: result method
+        } else if(command.equals("prepare_results")){
+            prepareResults(config, res);
         }
 
         //
@@ -75,17 +79,17 @@ public class TestRunner {
         //clear workspace before starting new test
         RfileUtils.deleteFolder(RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT));
 
-        String workTestPlanDir = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJECT_WORKSPACE_TEST_PLAN);
-        String workSourcesDir = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJECT_WORKSPACE_TEST_RESOUCE);
+        String workTestPlanDir = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJECT_TEST_PLAN);
+        String workSourcesDir = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJECT_TEST_RESOUCE);
         RfileUtils.createFolder(workTestPlanDir);
         RfileUtils.createFolder(workSourcesDir);
-        RfileUtils.createFolder(RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJJECT_WORKSPACE_TEST_RESULT));
+        RfileUtils.createFolder(RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJJECT_TEST_RESULT));
 
         //copy test plan
         RfileUtils.copyFile(attributes.get("test_plan").toString(), workTestPlanDir);
 
         //copy sources
-        String staticSourcesDir = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_TEST_RESOUCE);
+        String staticSourcesDir = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_TEST_RESOUCE);
         RfileUtils.copyFiles(staticSourcesDir, workSourcesDir, new String[]{"csv"});
 
         //copy fixed jmeter.properties file to bin folder (replace existing)
@@ -98,10 +102,25 @@ public class TestRunner {
         String testName = RfileUtils.getFileName(attributes.get("test_plan").toString());
         String command = String.format("%s -n -t %s -l %s",
                 config.JMETER_EXECUTABLE_PATH,
-                RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJECT_WORKSPACE_TEST_PLAN, testName),
-                RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJJECT_WORKSPACE_TEST_RESULT, config.JMETER_SW_RESULTS_PATH));
+                RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJECT_TEST_PLAN, testName),
+                RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJJECT_TEST_RESULT, config.JMETER_TOTAL_RESULTS_PATH));
         log.info("Run command: " + command);
         RuntimeRunner.execute(command, config);
+    }
+
+    private static void prepareResults(Config config, Namespace attributes){
+        String totalResults = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJJECT_TEST_RESULT, config.JMETER_TOTAL_RESULTS_PATH);
+        String summaryResults = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJECT_WORKSPACE_ROOT, config.PROJJECT_TEST_RESULT, config.JMETER_SUMMARY_RESULTS_PATH);
+        List totalList = RfileUtils.readCSV(totalResults);
+        List summaryList = RfileUtils.readCSV(summaryResults);
+        if(attributes.get("clear_trans_samplers")){
+            totalList = RfileUtils.clearTransactionSamplers(totalList, config.TRANSACTION_CONTROLLER_PREFIX);
+            summaryList = RfileUtils.clearTransactionSamplers(summaryList, config.TRANSACTION_CONTROLLER_PREFIX);
+        }
+
+        String finalPath = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJJECT_TEST_RESULT);
+        RfileUtils.writeCSV(totalList, RfileUtils.combinePaths(finalPath, config.JMETER_TOTAL_RESULTS_PATH));
+        RfileUtils.writeCSV(summaryList, RfileUtils.combinePaths(finalPath, config.JMETER_SUMMARY_RESULTS_PATH));
     }
 
     private static Config getConfig(){

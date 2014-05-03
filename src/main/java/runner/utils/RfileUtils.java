@@ -1,7 +1,7 @@
 package main.java.runner.utils;
 
-import java.io.File;
-import java.io.IOException;
+import java.awt.*;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -62,6 +62,61 @@ public class RfileUtils {
 
     public static String getFileName(String path){
         return FilenameUtils.getName(path);
+    }
+
+    public static List readCSV(String file){
+        BufferedReader br = null;
+        String line = null;
+        List result = new List();
+        log.info("Read csv file: " + file);
+        try{
+            br = new BufferedReader(new FileReader(file));
+            while ((line = br.readLine()) != null){
+                result.add(line);
+            }
+            br.close();
+        }
+        catch (FileNotFoundException ex){
+            log.warning("Results file not found: " + file);
+            return null;
+        }
+        catch (IOException ex){
+            log.warning("Error while reading results file: " + file);
+            return null;
+        }
+        return result;
+    }
+
+    public static List clearTransactionSamplers(List list, String prefix){
+        if(list == null){
+            return null;
+        }
+        for (String line : list.getItems()){
+            if(line.startsWith(prefix)){
+                list.remove(line);
+            }
+        }
+        return list;
+    }
+
+    public static void writeCSV(List list, String file){
+        if (list == null){
+            log.warning("Empty results list. Nothing to write to results scv: " + file);
+            return;
+        }
+        BufferedWriter bw = null;
+        log.info("Write csv file: " + file);
+
+        try{
+            bw = new BufferedWriter(new FileWriter(file));
+            for (String line : list.getItems()){
+                bw.write(line);
+                bw.newLine();
+            }
+            bw.close();
+        } catch (IOException ex) {
+            log.warning("Could not write file: " + file);
+        }
     }
 
 
