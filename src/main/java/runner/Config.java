@@ -20,6 +20,11 @@ public class Config {
     public final String JMETER_SUMMARY_RESULTS_PATH = propertyLoader.loadProperty("jMeter_summary_results");
     public final String TRANSACTION_CONTROLLER_PREFIX = propertyLoader.loadProperty("transaction_controller_sapmler_prefix");
 
+    public final String LOADOSOPHIA_ADDRESS = propertyLoader.loadProperty("loadosophia_address");
+    public final String LOADOSOPHIA_TITLE = propertyLoader.loadProperty("loadosophia_title");
+    public final String LOADOSOPHIA_TOKEN = propertyLoader.loadProperty("loadosophia_token");
+    public final String LOADOSOPHIA_PROJECT = propertyLoader.loadProperty("loadosophia_project");
+
     public Config(){
     }
 }

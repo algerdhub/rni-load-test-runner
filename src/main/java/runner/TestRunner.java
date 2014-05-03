@@ -3,6 +3,11 @@ package main.java.runner;
 import main.java.runner.utils.RfileUtils;
 
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.logging.*;
 
 import main.java.runner.utils.RuntimeRunner;
@@ -43,6 +48,16 @@ public class TestRunner {
                 .setDefault(true)
                 .help("Remove transaction controllers from results");
 
+        Subparser loadosophia = subparsers.addParser("loadosophia").help("Upload results to Loadosophia.org");
+        loadosophia.addArgument("--target_file")
+                .type(Arguments.fileType().verifyIsFile())
+                .required(true)
+                .help("Define a file that will be a target file for Loadosophia.org");
+        loadosophia.addArgument("--other_files")
+                .type(Arguments.fileType().verifyIsFile())
+                .required(false)
+                .nargs(1)
+                .help("Define other files that needs to be uploaded to Loadosophia.org");
 
         Namespace res = null;
         try {
@@ -63,6 +78,8 @@ public class TestRunner {
             //TODO: status method
         } else if(command.equals("prepare_results")){
             prepareResults(config, res);
+        } else if (command.equals("loadosophia")){
+            uploadResults(config, res);
         }
 
         //
@@ -121,6 +138,34 @@ public class TestRunner {
         String finalPath = RfileUtils.combinePaths(config.PROJECT_ROOT_PATH, config.PROJJECT_TEST_RESULT);
         RfileUtils.writeCSV(totalList, RfileUtils.combinePaths(finalPath, config.JMETER_TOTAL_RESULTS_PATH));
         RfileUtils.writeCSV(summaryList, RfileUtils.combinePaths(finalPath, config.JMETER_SUMMARY_RESULTS_PATH));
+    }
+
+    private static void uploadResults(Config config, Namespace attributes){
+        String targetFile = attributes.get("target_file").toString();
+        ArrayList list = null;
+        LinkedList<String> addFiles = new LinkedList<String>();
+        try{
+            list = attributes.get("other_files");
+        } catch (NullPointerException ex){
+            //do nothing
+        }
+
+        if(list != null && list.size() > 0){
+            Iterator<String> iterator = list.iterator();
+            String line;
+            while (iterator.hasNext()){
+                line = String.valueOf(iterator.next());
+                addFiles.add(line.toString());
+            }
+        } else {
+            log.info("There are no additional files to upload to Loadosophia.org");
+        }
+        LoadosophiaUploader uploader = new LoadosophiaUploader(config);
+        try {
+            uploader.load(targetFile, addFiles);
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Failed to upload files to Loadosophia.org", e);
+        }
     }
 
     private static Config getConfig(){
