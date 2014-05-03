@@ -1,0 +1,59 @@
+<project name="rni-load-test-runner" default="help" basedir=".">
+
+    <description>
+        RNI TEST RUNNER
+    </description>
+
+    <property file="application.properties"/>
+    <property name="project.root" value="${project_root_path}" />
+    <property name="project.test_plans" value="${project.root}/${work_test_plan}" />
+    <property name="project.test_resources" value="${project.root}/${work_test_resource}" />
+    <property name="project.test_results" value="${project.root}/${work_test_result}" />
+    <property name="build.dir" value="build" />
+    <property name="src.dir" value="src/main/java/runner" />
+    <property name="lib.dir" value="libs" />
+
+    <!-- Compilation Params -->
+    <property name="optimize" value="on" />
+    <property name="deprecation" value="off" />
+    <property name="target.java.version" value="1.7" />
+    <property name="src.java.version" value="1.7" />
+    <property name="encoding" value="UTF-8" />
+    <property name="includeAntRuntime" value="false" />
+
+    <path id="srcpath">
+        <pathelement location="${src.dir}" />
+    </path>
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="*.jar" />
+    </path>
+
+    <target name="init">
+        <tstamp/>
+
+        <echo>RNI LOAD TEST PROJECT BUILDING TO ${project.root}</echo>
+    </target>
+
+    <target name="help">
+
+    </target>
+
+    <target name="clean" depends="init">
+        <delete dir="${build.dir}" />
+        <delete dir="${project.test_plans}"/>
+        <delete dir="${project.test_resources}"/>
+        <delete dir="${project.test_results}"/>
+    </target>
+
+    <target name="compile" depends="init" description="Complile rni-load-test-runner classes">
+        <mkdir dir="${build.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="${optimize}" source="${src.java.version}"
+               debug="on" target="${target.java.version}" includeAntRuntime="${includeAntRuntime}"
+               deprecation="${deprecation}" encoding="${encoding}">
+            <include name="**/*.java" />
+            <classpath refid="classpath" />
+        </javac>
+    </target>
+
+</project>
