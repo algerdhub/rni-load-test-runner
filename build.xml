@@ -11,7 +11,10 @@
     <property name="project.test_results" value="${project.root}/${work_test_result}" />
     <property name="build.dir" value="build" />
     <property name="src.dir" value="src/main/java/runner" />
-    <property name="lib.dir" value="libs" />
+    <property name="lib.dir" value="libs/" />
+    <property name="pack.dir" value="bin" />
+    <property name="res_jar" value="rni-load-test-runner.jar" />
+    <property name="resources" value="${src.dir}/resources" />
 
     <!-- Compilation Params -->
     <property name="optimize" value="on" />
@@ -21,13 +24,19 @@
     <property name="encoding" value="UTF-8" />
     <property name="includeAntRuntime" value="false" />
 
-    <path id="srcpath">
+    <path id="src.path">
         <pathelement location="${src.dir}" />
     </path>
 
     <path id="classpath">
-        <fileset dir="${lib.dir}" includes="*.jar" />
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar" />
+        </fileset>
     </path>
+
+    <manifestclasspath property="lib.list" jarfile=".">
+        <classpath refid="classpath" />
+    </manifestclasspath>
 
     <target name="init">
         <tstamp/>
@@ -40,10 +49,9 @@
     </target>
 
     <target name="clean" depends="init">
+        <delete dir="${project.root}" />
         <delete dir="${build.dir}" />
-        <delete dir="${project.test_plans}"/>
-        <delete dir="${project.test_resources}"/>
-        <delete dir="${project.test_results}"/>
+        <delete dir="${pack.dir}" />
     </target>
 
     <target name="compile" depends="init" description="Complile rni-load-test-runner classes">
@@ -54,6 +62,43 @@
             <include name="**/*.java" />
             <classpath refid="classpath" />
         </javac>
+    </target>
+
+    <target name="package" depends="init, compile" description="jar the application">
+
+        <jar destfile="${pack.dir}/${res_jar}" basedir="${build.dir}">
+            <zipgroupfileset dir="${lib.dir}">
+                <include name="**/*.jar" />
+            </zipgroupfileset>
+            <manifest>
+                <attribute name="Main-Class" value="main.java.runner.TestRunner" />
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="install" description="Install the app" depends="init, clean, compile, package">
+        <delete file="${project.root}" />
+        <copy file="${pack.dir}/${res_jar}" tofile="${project.root}/${res_jar}" />
+
+        <mkdir dir="${project.test_plans}" />
+        <mkdir dir="${project.test_results}" />
+        <mkdir dir="${project.test_resources}" />
+
+        <copy todir="${project.test_plans}">
+            <fileset dir="${path_to_existing_test_plans}" >
+                <include name="**/*.jmx" />
+            </fileset>
+        </copy>
+        <copy todir="${project.test_resources}">
+            <fileset dir="${path_to_existing_test_sources}" >
+                <include name="**/*.csv" />
+            </fileset>
+        </copy>
+
+        <copy file="application.properties" tofile="${project.root}/application.properties" />
+        <copy file="${resources}/jmeter.properties" tofile="${project.root}/jmeter.properties" />
+
     </target>
 
 </project>
